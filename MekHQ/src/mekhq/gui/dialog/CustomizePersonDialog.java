@@ -77,7 +77,9 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
     private Frame frame;
     
     private javax.swing.JButton btnClose;
-    private javax.swing.JButton btnOk;
+    private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnPrevious;
+    private javax.swing.JButton btnNext;
     private javax.swing.JButton btnRandomName;
     private javax.swing.JButton btnRandomBloodname;
     private javax.swing.JButton btnDate;
@@ -124,6 +126,7 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
         this.dateFormat = new SimpleDateFormat("MMMM d yyyy");
         this.person = person;
         initializePilotAndOptions();
+        initComponents();
         setLocationRelativeTo(parent);
     }
 
@@ -133,7 +136,6 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
             this.recruitment = (GregorianCalendar)person.getRecruitment().clone();
         }
     	this.options = person.getOptions();	
-    	initComponents();
     }
 
     @SuppressWarnings("serial")
@@ -162,7 +164,9 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
         scrBio = new javax.swing.JScrollPane();
         txtBio = new javax.swing.JTextPane();
         panButtons = new javax.swing.JPanel();
-        btnOk = new javax.swing.JButton();
+        btnSave = new javax.swing.JButton();
+        btnPrevious = new javax.swing.JButton();
+        btnNext = new javax.swing.JButton();
         
         btnClose = new javax.swing.JButton();
         btnRandomName = new javax.swing.JButton();
@@ -593,21 +597,33 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
         
         panButtons.setName("panButtons"); // NOI18N
         panButtons.setLayout(new java.awt.GridBagLayout());
-     
-        btnOk.setText(resourceMap.getString("btnOk.text")); // NOI18N
-        btnOk.setName("btnOk"); // NOI18N
-        btnOk.addActionListener(new java.awt.event.ActionListener() {
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new Insets(10,10,10,10);  //slight padding
+        
+        btnPrevious.setText("<- " + resourceMap.getString("btnPrevious.text")); // NOI18N
+        btnPrevious.setName("btnPrevious"); // NOI18N
+        btnPrevious.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnOkActionPerformed(evt);
+                btnPreviousActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        
+        panButtons.add(btnPrevious, gridBagConstraints);
+     
+        btnSave.setText(resourceMap.getString("btnSave.text")); // NOI18N
+        btnSave.setName("btnSave"); // NOI18N
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
 
-        panButtons.add(btnOk, gridBagConstraints);
-        gridBagConstraints.gridx++;
+        panButtons.add(btnSave, gridBagConstraints);
 
         btnClose.setText(resourceMap.getString("btnClose.text")); // NOI18N
         btnClose.setName("btnClose"); // NOI18N
@@ -616,12 +632,27 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
                 btnCloseActionPerformed(evt);
             }
         });
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        
         panButtons.add(btnClose, gridBagConstraints);
+        
+        btnNext.setText(resourceMap.getString("btnNext.text") + " ->"); // NOI18N
+        btnNext.setName("btnNext"); // NOI18N
+        btnNext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNextActionPerformed(evt);
+            }
+        });
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        
+        panButtons.add(btnNext, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         getContentPane().add(panButtons, gridBagConstraints);
 
@@ -631,10 +662,52 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         setVisible(false);
     }//GEN-LAST:event_btnCloseActionPerformed
+    
+    private void btnPreviousActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPreviousActionPerformed
+    	saveEdits();
+    	for (int i = 0; i < campaign.getPersonnel().size(); i++) {
+    		if (campaign.getPersonnel().get(i) == person) {
+    			if (i == 0) {
+    				person = campaign.getPersonnel().get(campaign.getPersonnel().size()-1);
+    			} else {
+    				person = campaign.getPersonnel().get(i-1);
+    			}
+    			break;
+    		}
+    	}
+    	initializePilotAndOptions();
+    	saveEdits();
+    	refreshSkills();
+    	refreshOptions();
+    	pack();
+    }//GEN-LAST:event_btnPreviousActionPerformed
+    
+    private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
+    	saveEdits();
+    	for (int i = 0; i < campaign.getPersonnel().size(); i++) {
+    		if (campaign.getPersonnel().get(i) == person) {
+    			if (i == campaign.getPersonnel().size()-1) {
+    				person = campaign.getPersonnel().get(0);
+    			} else {
+    				person = campaign.getPersonnel().get(i+1);
+    			}
+    			break;
+    		}
+    	}
+    	initializePilotAndOptions();
+    	saveEdits();
+    	refreshSkills();
+    	refreshOptions();
+    	pack();
+    }//GEN-LAST:event_btnNextActionPerformed
 
-    private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
-        
-        person.setName(textName.getText());
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+    	saveEdits();
+        setVisible(false);
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void saveEdits() {
+    	person.setName(textName.getText());
         person.setCallsign(textNickname.getText());
         person.setBloodname(textBloodname.getText());
         person.setBiography(txtBio.getText());
@@ -646,7 +719,7 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
         try {
         	person.setToughness(Integer.parseInt(textToughness.getText()));
         } catch(NumberFormatException e) {
-        	//dont do anything
+        	//don't do anything
         }
         if (null == choiceOriginalUnit.getSelectedItem()) {
         	person.setOriginalUnitWeight(choiceUnitWeight.getSelectedIndex());
@@ -656,10 +729,9 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
         }
         person.setFounder(chkFounder.isSelected());
         setSkills();
-        setOptions();       
-        setVisible(false);
-    }//GEN-LAST:event_btnOkActionPerformed
-
+        setOptions();
+    }
+    
     private void randomName() {
 		textName.setText(campaign.getRNG().generate(choiceGender.getSelectedIndex() == Person.G_FEMALE));
 	}
@@ -969,7 +1041,7 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
         ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CustomizePersonDialog", new EncodeControl()); //$NON-NLS-1$
         // show the date chooser
         DateChooser dc = new DateChooser(frame, birthdate);
-        // user can eiter choose a date or cancel by closing
+        // user can either choose a date or cancel by closing
         if (dc.showDateChooser() == DateChooser.OK_OPTION) {
             birthdate = dc.getDate();
             btnDate.setText(getDateAsString());
@@ -1056,7 +1128,7 @@ public class CustomizePersonDialog extends javax.swing.JDialog implements Dialog
     
 
     public void optionClicked(DialogOptionComponent arg0, IOption arg1, boolean arg2) {
-        //IMplement me!!
+    	//Not Used - Included because CustomizePersonDialog requires a DialogOptionListener interface.
     }
 
 }

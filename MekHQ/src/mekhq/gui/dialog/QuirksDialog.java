@@ -43,7 +43,6 @@ import megamek.common.options.WeaponQuirks;
 
 /**
  * @author Deric Page (dericpage@users.sourceforge.net)
- * @version %I% %G%
  * @since 3/26/2012
  */
 public class QuirksDialog extends JDialog implements DialogOptionListener, ActionListener {
@@ -60,7 +59,7 @@ public class QuirksDialog extends JDialog implements DialogOptionListener, Actio
     private JButton cancelButton;
 
     /**
-     * Handles the editing and deteling of Quirks.  Utilizes the QuirksPanel from megamek for the bulk of its work.
+     * Handles the editing of Quirks.  Utilizes the QuirksPanel from Megamek.
      *
      * @param entity The {@link Entity} being edited.
      * @param parent The {@link JFrame} of the parent panel.
@@ -109,7 +108,7 @@ public class QuirksDialog extends JDialog implements DialogOptionListener, Actio
 
     @Override
     public void optionClicked(DialogOptionComponent dialogOptionComponent, IOption iOption, boolean b) {
-        //Not Used  Included because QuriksPanel requires a DialogOptionListener interface.
+        //Not Used - Included because QuirksPanel requires a DialogOptionListener interface.
     }
 
     @Override
