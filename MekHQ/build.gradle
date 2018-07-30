@@ -1,0 +1,75 @@
+
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: "com.github.ben-manes.versions"
+
+
+description = "MekHQ is a java helper program for the MegaMek game that allows users to load a list of entities from an XML file, perform repairs and customizations, and then save the new entities to another XML file that can be loaded into MegaMek. http://megamek.org/mekhq"
+version = "0.45-git"
+
+mainClassName = "mekhq.MekHQ"
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        // https://github.com/ben-manes/gradle-versions-plugin
+        classpath "com.github.ben-manes:gradle-versions-plugin:0.20.0"
+    }
+}
+
+
+sourceSets {
+    main.java.srcDirs = ['src/mekhq', 'src/chat']
+    main.resources.srcDirs = ['src/mekhq/resources']
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': name,
+                   'Implementation-Version': version,
+                   //'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' '),
+                   'Main-Class': mainClassName
+    }
+    // create "fat" jar file
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    repositories {
+        mavenCentral()
+        flatDir {
+            dirs '.'
+        }
+    }
+    doLast{
+        copy {
+            from 'build/libs/MekHQ-' + version + '.jar'
+            into "./"
+        }
+    }
+}
+
+if (!hasProperty('mainClass')) {
+    ext.mainClass = mainClassName
+}
+
+dependencies {
+    compile (
+        [group: 'org.jfree', name: 'jfreechart', version: '1.5.0'],
+        [group: 'joda-time', name: 'joda-time', version: '1.6'],
+        [group: 'org.apache.commons', name: 'commons-text', version: '1.1'],
+        [group: 'org.apache.commons', name: 'commons-csv', version: '1.5'],
+        [group: 'javax.vecmath', name: 'vecmath', version: '1.5.2'],
+        [group: 'log4j', name: 'log4j', version: '1.2.17'],
+        [name: 'MegaMek'],
+        [name: 'MegaMekLab']
+    )
+    testCompile (
+        [group: 'junit', name: 'junit', version: '4.+']
+    )
+}

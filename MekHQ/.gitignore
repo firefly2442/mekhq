@@ -12,8 +12,11 @@
 /.settings/
 /classes
 MekHQ.jar
+MekHQ*.jar
 /*.zip
 /*.tar.gz
 /*.tar.bz2
 /*.blame
 /.classpath
+/build/
+/.gradle/
