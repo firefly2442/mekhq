@@ -61,7 +61,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -157,7 +156,7 @@ import mekhq.gui.dialog.ShipSearchDialog;
 import mekhq.gui.dialog.UnitCostReportDialog;
 import mekhq.gui.dialog.UnitMarketDialog;
 import mekhq.gui.dialog.UnitSelectorDialog;
-import mekhq.gui.model.PartsTableModel;
+import mekhq.gui.utilities.Export;
 
 /**
  * The application's main frame.
@@ -655,6 +654,16 @@ public class CampaignGUI extends JPanel {
             }
         });
         miExportCSVFile.add(miExportUnitCSV);
+
+        JMenuItem miExportPartsCSV = new JMenuItem(
+                resourceMap.getString("miExportPartsList.text")); // NOI18N
+        miExportPartsCSV.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miExportPartsCSVActionPerformed(evt);
+            }
+        });
+        miExportCSVFile.add(miExportPartsCSV);
         
         JMenuItem miExportPlanetsXML = new JMenuItem(
                 resourceMap.getString("miExportPlanets.text"));
@@ -1766,7 +1775,7 @@ public class CampaignGUI extends JPanel {
         getCampaign().reloadNews();
     }// GEN-LAST:event_menuOptionsActionPerformed
 
-    private void menuOptionsMMActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_menuOptionsActionPerformed
+    private void menuOptionsMMActionPerformed(java.awt.event.ActionEvent evt) {
         GameOptionsDialog god = new GameOptionsDialog(getFrame(), getCampaign().getGameOptions(), false);
         god.refreshOptions();
         god.setEditable(true);
@@ -1776,110 +1785,118 @@ public class CampaignGUI extends JPanel {
             setCampaignOptionsFromGameOptions();
             refreshCalendar();
         }
-    }// GEN-LAST:event_menuOptionsActionPerformed
+    }
 
-    private void miLoadForcesActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miLoadForcesActionPerformed
+    private void miLoadForcesActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             loadListFile(true);
         } catch (IOException ex) {
-            MekHQ.getLogger().log(getClass(), "miLoadForcesActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miLoadForcesActionPerformed(ActionEvent)", ex);
         }
-    }// GEN-LAST:event_miLoadForcesActionPerformed
+    }
 
     private void miLoadPlanetsActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             loadPlanetTSVFile();
         } catch (Exception ex) {
-            MekHQ.getLogger().log(getClass(), "miLoadPlanetsActionPerformed", ex);
+            MekHQ.getLogger().error(getClass(), "miLoadPlanetsActionPerformed", ex);
         }
     }
     
-    private void miImportPersonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miImportPersonActionPerformed
+    private void miImportPersonActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             loadPersonFile();
         } catch (IOException ex) {
-            MekHQ.getLogger().log(getClass(), "miImportPersonActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miImportPersonActionPerformed(ActionEvent)", ex);
         }
-    }// GEN-LAST:event_miImportPersonActionPerformed
+    }
 
-    public void miExportPersonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miExportPersonActionPerformed
+    public void miExportPersonActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            savePersonFile();
+            Export.savePersonFile("prsx", resourceMap.getString("dlgSavePersonXML.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedPersonnel", mainPanel, getCampaignGUI());
         } catch (IOException ex) {
-            MekHQ.getLogger().log(getClass(), "miExportPersonActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miExportPersonActionPerformed(ActionEvent)", ex);
         }
-    }// GEN-LAST:event_miExportPersonActionPerformed
+    }
 
-    private void miExportOptionsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miExportPersonActionPerformed
+    private void miExportOptionsActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            saveOptionsFile("xml", resourceMap.getString("dlgSaveCampaignXML.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedCampaignSettings");
+            Export.saveOptionsFile("xml", resourceMap.getString("dlgSaveCampaignXML.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedCampaignSettings", mainPanel, getCampaign(), getCampaign().getCampaignOptions());
         } catch (IOException ex) {
-            MekHQ.getLogger().log(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
         }
-    }// GEN-LAST:event_miExportPersonActionPerformed
+    }
 
-    private void miExportPlanetsXMLActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miExportPersonActionPerformed
+    private void miExportPlanetsXMLActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            exportPlanets("xml", resourceMap.getString("dlgSavePlanetsXML.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedPlanets");
+            Export.exportPlanets("xml", resourceMap.getString("dlgSavePlanetsXML.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedPlanets", mainPanel);
         } catch (Exception ex) {
-            MekHQ.getLogger().log(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
         }
     }
     
     private void miExportFinancesCSVActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            exportFinances("csv", resourceMap.getString("dlgSaveFinancesCSV.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedFinances");
+            Export.exportFinances("csv", resourceMap.getString("dlgSaveFinancesCSV.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedFinances", mainPanel, getCampaign());
         } catch (Exception ex) {
-            MekHQ.getLogger().log(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
         }
     }
     
-    private void miExportPersonnelCSVActionPerformed(java.awt.event.ActionEvent evt) {
+    public void miExportPersonnelCSVActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            exportPersonnel("csv", resourceMap.getString("dlgSavePersonnelCSV.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedPersonnel");
+            Export.exportTable(((PersonnelTab)getTab(GuiTabType.PERSONNEL)).getPersonnelTable(), "csv", resourceMap.getString("dlgSavePersonnelCSV.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedPersonnel", mainPanel);
         } catch (Exception ex) {
-            MekHQ.getLogger().log(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
         }
     }
     
     private void miExportUnitCSVActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            exportUnits("csv", resourceMap.getString("dlgSaveUnitsCSV.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedUnits");
+            Export.exportTable(((HangarTab)getTab(GuiTabType.HANGAR)).getUnitTable(), "csv", resourceMap.getString("dlgSaveUnitsCSV.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedUnits", mainPanel);
         } catch (Exception ex) {
-            MekHQ.getLogger().log(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
         }
     }
-    
-    private void miImportOptionsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miExportPersonActionPerformed
+
+    public void miExportPartsCSVActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            Export.exportTable(((WarehouseTab)getTab(GuiTabType.WAREHOUSE)).getPartsTable(), "csv", resourceMap.getString("dlgSavePartsCSV.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_ExportedParts", mainPanel);
+        } catch (Exception ex) {
+            MekHQ.getLogger().error(getClass(), "miExportOptionsActionPerformed(ActionEvent)", ex);
+        }
+    }
+
+    private void miImportOptionsActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             loadOptionsFile();
         } catch (IOException ex) {
-            MekHQ.getLogger().log(getClass(), "miImportOptionsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miImportOptionsActionPerformed(ActionEvent)", ex);
         }
-    }// GEN-LAST:event_miExportPersonActionPerformed
+    }
 
-    private void miImportPartsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miImportPersonActionPerformed
+    private void miImportPartsActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             loadPartsFile();
         } catch (IOException ex) {
-            MekHQ.getLogger().log(getClass(), "miImportPartsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miImportPartsActionPerformed(ActionEvent)", ex);
         }
-    }// GEN-LAST:event_miImportPersonActionPerformed
+    }
 
-    public void miExportPartsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miExportPersonActionPerformed
+    public void miExportPartsActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            savePartsFile();
+            Export.savePartsFile("parts", resourceMap.getString("dlgSavePartsFile.text"), getCampaign().getName() + getCampaign().getShortDateAsString() + "_Parts", mainPanel, getCampaignGUI());
         } catch (IOException ex) {
-            MekHQ.getLogger().log(getClass(), "miExportPartsActionPerformed(ActionEvent)", ex);
+            MekHQ.getLogger().error(getClass(), "miExportPartsActionPerformed(ActionEvent)", ex);
         }
-    }// GEN-LAST:event_miExportPersonActionPerformed
+    }
 
-    private void miPurchaseUnitActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_miPurchaseUnitActionPerformed
+    private void miPurchaseUnitActionPerformed(java.awt.event.ActionEvent evt) {
         UnitSelectorDialog usd = new UnitSelectorDialog(getFrame(),
                 getCampaign(), true);
 
         usd.setVisible(true);
-    }// GEN-LAST:event_miPurchaseUnitActionPerformed
+    }
 
     private void buyParts() {
         PartsStoreDialog psd = new PartsStoreDialog(true, this);
@@ -2125,27 +2142,6 @@ public class CampaignGUI extends JPanel {
     }
     
 	/**
-	 * Exports Planets to a file (CSV, XML, etc.)
-	 * @param format
-	 * @param dialogTitle
-	 * @param filename
-	 */
-    protected void exportPlanets(String format, String dialogTitle, String filename) {
-        JFileChooser fc = getExportFile(format, dialogTitle, filename);
-
-        File file = fc.getSelectedFile();
-        if (file == null) {
-            return; // something went wrong
-        }
-
-        file = checkFileEnding(file, format);
-        checkToBackupFile(file, file.getPath());
-        
-        String report = Planets.getInstance().exportPlanets(file.getPath(), format);
-        JOptionPane.showMessageDialog(mainPanel, report);
-    }
-    
-	/**
 	 * Exports Personnel to a file (CSV, XML, etc.)
 	 * @param format
 	 * @param dialogTitle
@@ -2153,12 +2149,12 @@ public class CampaignGUI extends JPanel {
 	 */
     protected void exportPersonnel(String format, String dialogTitle, String filename) {
     	if (((PersonnelTab)getTab(GuiTabType.PERSONNEL)).getPersonnelTable().getRowCount() != 0) {
-    		exportTable(((PersonnelTab)getTab(GuiTabType.PERSONNEL)).getPersonnelTable(), filename, format, dialogTitle);
+    		Export.exportTable(((PersonnelTab)getTab(GuiTabType.PERSONNEL)).getPersonnelTable(), filename, format, dialogTitle, mainPanel);
     	} else {
     		JOptionPane.showMessageDialog(mainPanel, resourceMap.getString("dlgNoPersonnel.text"));
     	} 
     }
-    
+
 	/**
 	 * Exports Units to a file (CSV, XML, etc.)
 	 * @param format
@@ -2167,111 +2163,28 @@ public class CampaignGUI extends JPanel {
 	 */
     protected void exportUnits(String format, String dialogTitle, String filename) {
     	if (((HangarTab)getTab(GuiTabType.HANGAR)).getUnitTable().getRowCount() != 0) {
-    		exportTable(((HangarTab)getTab(GuiTabType.HANGAR)).getUnitTable(), filename, format, dialogTitle);
+    		Export.exportTable(((HangarTab)getTab(GuiTabType.HANGAR)).getUnitTable(), filename, format, dialogTitle, mainPanel);
     	} else {
-    		JOptionPane.showMessageDialog(mainPanel, resourceMap.getString("dlgNoUnits"));
+    		JOptionPane.showMessageDialog(mainPanel, resourceMap.getString("dlgNoUnits.text"));
     	} 
     }
-    
-	/**
-	 * Exports Finances to a file (CSV, XML, etc.)
-	 * @param format
-	 * @param dialogTitle
-	 * @param filename
-	 */
-    protected void exportFinances(String format, String dialogTitle, String filename) {
-    	if (getCampaign().getFinances().getAllTransactions().size() != 0) {
-	        JFileChooser fc = getExportFile(format, dialogTitle, filename);
-	
-	        File file = fc.getSelectedFile();
-	        if (file == null) {
-	            return; // something went wrong
-	        }
-	
-	        file = checkFileEnding(file, format);
-	        checkToBackupFile(file, file.getPath());
-	
-	        String report = getCampaign().getFinances().exportFinances(file.getPath(), format);
-	        JOptionPane.showMessageDialog(mainPanel, report);
-    	} else {
-    		JOptionPane.showMessageDialog(mainPanel, resourceMap.getString("dlgNoFinances.text"));
-    		return;
-    	}
-    }
-    
-	/**
-	 * Gets a filename from the user using the JFileChooser
-	 * @param format
-	 * @param dialogTitle
-	 * @param filename
-	 * @return JFileChooser
-	 */
-    private JFileChooser getExportFile(String format, String dialogTitle, String filename) {
-    	JFileChooser filePicker = new JFileChooser(".");
-    	filePicker.setDialogTitle(dialogTitle);
-    	filePicker.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File dir) {
-                if (dir.isDirectory()) {
-                    return true;
-                }
-                return dir.getName().endsWith(format);
-            }
 
-            @Override
-            public String getDescription() {
-            	// TODO: future support TD or other formats?
-                if(format.equals("csv")) {
-                    return "CSV File";
-                } else if (format.equals("xml")) {
-                	return "XML File";
-                } else if (format.equals("json")) {
-                	return "JSON File";
-                } else {
-                    return "File";
-                }
-            }
-        });
-    	filePicker.setSelectedFile(new File(filename + "." + format));
-        int returnVal = filePicker.showSaveDialog(mainPanel);
+    /**
+     * Exports Parts List to a file (CSV, XML, etc.)
+     * @param format
+     * @param dialogTitle
+     * @param filename
+     */
+    protected void exportParts(String format, String dialogTitle, String filename) {
+        if (((WarehouseTab)getTab(GuiTabType.WAREHOUSE)).getPartsTable().getRowCount() != 0) {
+            Export.exportTable(((WarehouseTab)getTab(GuiTabType.WAREHOUSE)).getPartsTable(), filename, format, dialogTitle, mainPanel);
+        } else {
+            JOptionPane.showMessageDialog(mainPanel, resourceMap.getString("dlgNoParts.text"));
+        }
+    }
+    
+	
 
-        if ((returnVal != JFileChooser.APPROVE_OPTION)
-                || (filePicker.getSelectedFile() == null)) {
-            // I want a file, y'know!
-            return null;
-        }
-        return filePicker;
-    }
-    
-	/**
-	 * Checks if a file already exists, if so it makes a backup copy.
-	 * @param file
-	 * @param path
-	 */
-    private void checkToBackupFile(File file, String path) {
-        // check for existing file and make a back-up if found
-        String path2 = path + "_backup";
-        File backupFile = new File(path2);
-        if (file.exists()) {
-            Utilities.copyfile(file, backupFile);
-        }
-    }
-    
-	/**
-	 * Checks to make sure the file has the appropriate ending / extension.
-	 * @param file
-	 * @param format
-	 * @return File
-	 */
-    private File checkFileEnding(File file, String format) {
-        String path = file.getPath();
-        if (!path.endsWith("." + format)) {
-            path += "." + format;
-            file = new File(path);
-        }
-        return file;
-    }
-    
     protected void loadListFile(boolean allowNewPilots) throws IOException {
         final String METHOD_NAME = "loadListFile(boolean)";
         
@@ -2445,194 +2358,6 @@ public class CampaignGUI extends JPanel {
             }
             MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.INFO, //$NON-NLS-1$
                     "Finished load of personnel file"); //$NON-NLS-1$
-        }
-    }
-
-    //TODO: disable if not using personnel tab
-    private void savePersonFile() throws IOException {
-        final String METHOD_NAME = "savePersonFile()";
-        
-        JFileChooser savePersonnel = new JFileChooser(".");
-        savePersonnel.setDialogTitle("Save Personnel");
-        savePersonnel.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File dir) {
-                if (dir.isDirectory()) {
-                    return true;
-                }
-                return dir.getName().endsWith(".prsx");
-            }
-
-            @Override
-            public String getDescription() {
-                return "Personnel file";
-            }
-        });
-        savePersonnel.setSelectedFile(new File(getCampaign().getName()
-                + getCampaign().getShortDateAsString()
-                + "_ExportedPersonnel" + ".prsx")); //$NON-NLS-1$
-        int returnVal = savePersonnel.showSaveDialog(mainPanel);
-
-        if ((returnVal != JFileChooser.APPROVE_OPTION)
-                || (savePersonnel.getSelectedFile() == null)) {
-            // I want a file, y'know!
-            return;
-        }
-
-        File file = savePersonnel.getSelectedFile();
-        if (file == null) {
-            // I want a file, y'know!
-            return;
-        }
-        String path = file.getPath();
-        if (!path.endsWith(".prsx")) {
-            path += ".prsx";
-            file = new File(path);
-        }
-
-        // check for existing file and make a back-up if found
-        String path2 = path + "_backup";
-        File backupFile = new File(path2);
-        if (file.exists()) {
-            Utilities.copyfile(file, backupFile);
-        }
-
-        // Then save it out to that file.
-        FileOutputStream fos = null;
-        PrintWriter pw = null;
-
-        try {
-        	PersonnelTab pt = (PersonnelTab)getTab(GuiTabType.PERSONNEL);
-            int row = pt.getPersonnelTable().getSelectedRow();
-            if (row < 0) {
-                MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.WARNING, //$NON-NLS-1$
-                        "ERROR: Cannot export person if no one is selected! Ignoring."); //$NON-NLS-1$
-                return;
-            }
-            Person selectedPerson = pt.getPersonModel().getPerson(pt.getPersonnelTable()
-                    .convertRowIndexToModel(row));
-            int[] rows = pt.getPersonnelTable().getSelectedRows();
-            Person[] people = new Person[rows.length];
-            for (int i = 0; i < rows.length; i++) {
-                people[i] = pt.getPersonModel().getPerson(pt.getPersonnelTable()
-                        .convertRowIndexToModel(rows[i]));
-            }
-            fos = new FileOutputStream(file);
-            pw = new PrintWriter(new OutputStreamWriter(fos, "UTF-8"));
-
-            // File header
-            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-
-            ResourceBundle resourceMap = ResourceBundle
-                    .getBundle("mekhq.resources.MekHQ");
-            // Start the XML root.
-            pw.println("<personnel version=\""
-                    + resourceMap.getString("Application.version") + "\">");
-
-            if (rows.length > 1) {
-                for (int i = 0; i < rows.length; i++) {
-                    people[i].writeToXml(pw, 1);
-                }
-            } else {
-                selectedPerson.writeToXml(pw, 1);
-            }
-            // Okay, we're done.
-            // Close everything out and be done with it.
-            pw.println("</personnel>");
-            pw.flush();
-            pw.close();
-            fos.close();
-            // delete the backup file because we didn't need it
-            if (backupFile.exists()) {
-                backupFile.delete();
-            }
-            MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.INFO, //$NON-NLS-1$
-                    "Personnel saved to " + file); //$NON-NLS-1$
-        } catch (Exception ex) {
-            MekHQ.getLogger().log(getClass(), METHOD_NAME, ex); //$NON-NLS-1$
-            JOptionPane
-                    .showMessageDialog(
-                            getFrame(),
-                            "Oh no! The program was unable to correctly export your personnel. We know this\n"
-                                    + "is annoying and apologize. Please help us out and submit a bug with the\n"
-                                    + "mekhqlog.txt file from this game so we can prevent this from happening in\n"
-                                    + "the future.",
-                            "Could not export personnel",
-                            JOptionPane.ERROR_MESSAGE);
-            // restore the backup file
-            file.delete();
-            if (backupFile.exists()) {
-                Utilities.copyfile(backupFile, file);
-                backupFile.delete();
-            }
-        }
-    }
-
-    private void saveOptionsFile(String format, String dialogTitle, String filename) throws IOException {
-        final String METHOD_NAME = "saveOptionsFile()";
-        
-        JFileChooser fc = getExportFile(format, dialogTitle, filename);
-
-        File file = fc.getSelectedFile();
-        if (file == null) {
-            return; // something went wrong
-        }
-
-        file = checkFileEnding(file, format);
-        checkToBackupFile(file, file.getPath());
-
-        // Then save it out to that file.
-        FileOutputStream fos = null;
-        PrintWriter pw = null;
-
-        try {
-            fos = new FileOutputStream(file);
-            pw = new PrintWriter(new OutputStreamWriter(fos, "UTF-8"));
-
-            ResourceBundle resourceMap = ResourceBundle
-                    .getBundle("mekhq.resources.MekHQ");
-            // File header
-            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            pw.println("<options version=\""
-                    + resourceMap.getString("Application.version") + "\">");
-            // Start the XML root.
-            getCampaign().getCampaignOptions().writeToXml(pw, 1);
-            pw.println("\t<skillTypes>");
-            for (String name : SkillType.skillList) {
-                SkillType type = SkillType.getType(name);
-                if (null != type) {
-                    type.writeToXml(pw, 2);
-                }
-            }
-            pw.println("\t</skillTypes>");
-            pw.println("\t<specialAbilities>");
-            for (String key : SpecialAbility.getAllSpecialAbilities().keySet()) {
-                SpecialAbility.getAbility(key).writeToXml(pw, 2);
-            }
-            pw.println("\t</specialAbilities>");
-            getCampaign().getRandomSkillPreferences().writeToXml(pw, 1);
-            pw.println("</options>");
-            // Okay, we're done.
-            // Close everything out and be done with it.
-            pw.flush();
-            pw.close();
-            fos.close();
-
-            JOptionPane.showMessageDialog(mainPanel, getResourceMap().getString("dlgCampaignSettingsSaved.text"));
-            
-            MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.INFO, //$NON-NLS-1$
-                    "Campaign Options saved saved to " + file); //$NON-NLS-1$
-        } catch (Exception ex) {
-            MekHQ.getLogger().log(getClass(), METHOD_NAME, ex); //$NON-NLS-1$
-            JOptionPane
-                    .showMessageDialog(
-                            getFrame(),
-                            "Oh no! The program was unable to correctly export your campaign options. We know this\n"
-                                    + "is annoying and apologize. Please help us out and submit a bug with the\n"
-                                    + "mekhqlog.txt file from this game so we can prevent this from happening in\n"
-                                    + "the future.",
-                            "Could not export campaign options",
-                            JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -2881,148 +2606,9 @@ public class CampaignGUI extends JPanel {
         getCampaign().reloadNews();
     }
 
-    private void savePartsFile() throws IOException {
-        String METHOD_NAME = "savePartsFile()";
-        
-        JFileChooser saveParts = new JFileChooser(".");
-        saveParts.setDialogTitle("Save Parts");
-        saveParts.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File dir) {
-                if (dir.isDirectory()) {
-                    return true;
-                }
-                return dir.getName().endsWith(".parts");
-            }
+    
 
-            @Override
-            public String getDescription() {
-                return "Parts file";
-            }
-        });
-        saveParts.setSelectedFile(new File(getCampaign().getName()
-                + getCampaign().getShortDateAsString()
-                + "_ExportedParts" + ".parts")); //$NON-NLS-1$
-        int returnVal = saveParts.showSaveDialog(mainPanel);
-
-        if ((returnVal != JFileChooser.APPROVE_OPTION)
-                || (saveParts.getSelectedFile() == null)) {
-            // I want a file, y'know!
-            return;
-        }
-
-        File file = saveParts.getSelectedFile();
-        if (file == null) {
-            // I want a file, y'know!
-            return;
-        }
-        String path = file.getPath();
-        if (!path.endsWith(".parts")) {
-            path += ".parts";
-            file = new File(path);
-        }
-
-        // check for existing file and make a back-up if found
-        String path2 = path + "_backup";
-        File backupFile = new File(path2);
-        if (file.exists()) {
-            Utilities.copyfile(file, backupFile);
-        }
-
-        // Then save it out to that file.
-        FileOutputStream fos = null;
-        PrintWriter pw = null;
-
-        if (getTab(GuiTabType.WAREHOUSE) != null) {
-	        try {
-	        	JTable partsTable = ((WarehouseTab)getTab(GuiTabType.WAREHOUSE)).getPartsTable();
-	        	PartsTableModel partsModel = ((WarehouseTab)getTab(GuiTabType.WAREHOUSE)).getPartsModel();
-	            int row = partsTable.getSelectedRow();
-	            if (row < 0) {
-	                MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.WARNING, //$NON-NLS-1$
-	                        "ERROR: Cannot export parts if none are selected! Ignoring."); //$NON-NLS-1$
-	                return;
-	            }
-	            Part selectedPart = partsModel.getPartAt(partsTable
-	                    .convertRowIndexToModel(row));
-	            int[] rows = partsTable.getSelectedRows();
-	            Part[] parts = new Part[rows.length];
-	            for (int i = 0; i < rows.length; i++) {
-	                parts[i] = partsModel.getPartAt(partsTable
-	                        .convertRowIndexToModel(rows[i]));
-	            }
-	            fos = new FileOutputStream(file);
-	            pw = new PrintWriter(new OutputStreamWriter(fos, "UTF-8"));
-	
-	            // File header
-	            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-	
-	            ResourceBundle resourceMap = ResourceBundle
-	                    .getBundle("mekhq.resources.MekHQ");
-	            // Start the XML root.
-	            pw.println("<parts version=\""
-	                    + resourceMap.getString("Application.version") + "\">");
-	
-	            if (rows.length > 1) {
-	                for (int i = 0; i < rows.length; i++) {
-	                    parts[i].writeToXml(pw, 1);
-	                }
-	            } else {
-	                selectedPart.writeToXml(pw, 1);
-	            }
-	            // Okay, we're done.
-	            // Close everything out and be done with it.
-	            pw.println("</parts>");
-	            pw.flush();
-	            pw.close();
-	            fos.close();
-	            // delete the backup file because we didn't need it
-	            if (backupFile.exists()) {
-	                backupFile.delete();
-	            }
-                MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.INFO, //$NON-NLS-1$
-                        "Parts saved to " + file); //$NON-NLS-1$
-	        } catch (Exception ex) {
-                MekHQ.getLogger().log(getClass(), METHOD_NAME, ex); //$NON-NLS-1$
-	            JOptionPane
-	                    .showMessageDialog(
-	                            getFrame(),
-	                            "Oh no! The program was unable to correctly export your parts. We know this\n"
-	                                    + "is annoying and apologize. Please help us out and submit a bug with the\n"
-	                                    + "mekhqlog.txt file from this game so we can prevent this from happening in\n"
-	                                    + "the future.", "Could not export parts",
-	                            JOptionPane.ERROR_MESSAGE);
-	            // restore the backup file
-	            file.delete();
-	            if (backupFile.exists()) {
-	                Utilities.copyfile(backupFile, file);
-	                backupFile.delete();
-	            }
-	        }
-        }
-    }
-
-    private void exportTable(JTable table, String filename, String format, String dialogTitle) {
-        JFileChooser fc = getExportFile(format, dialogTitle, filename);
-        String report = "";
-
-        File file = fc.getSelectedFile();
-        if (file == null) {
-            return; // something went wrong
-        }
-
-        file = checkFileEnding(file, format);
-        checkToBackupFile(file, file.getPath());
-
-        if (format.equals("csv")) {
-        	report = Utilities.exportTabletoCSV(table, file);
-        } else if (format.equals("xml")) {
-        	// TODO
-        } else if (format.equals("json")) {
-        	// TODO
-        }
-        JOptionPane.showMessageDialog(mainPanel, report);
-    }
+    
     
     public void refreshAllTabs() {
         for (int i = 0; i < tabMain.getTabCount(); i++) {
